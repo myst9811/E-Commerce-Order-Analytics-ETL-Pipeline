@@ -1,0 +1,15 @@
+
+INSERT INTO SS_BRONZE_CUSTOMERS
+SELECT
+    $1::NUMBER,
+    $2::STRING,
+    $3::STRING,
+    $4::STRING,
+    $5::STRING,
+    $6::STRING,
+    $7::STRING,
+    $8::TIMESTAMP,
+    CURRENT_TIMESTAMP,
+    METADATA$FILENAME,
+    HASH($1,$2,$3,$4,$5,$6,$7,$8)
+FROM @SS_BRONZE_STAGE/customers_day1.csv;
