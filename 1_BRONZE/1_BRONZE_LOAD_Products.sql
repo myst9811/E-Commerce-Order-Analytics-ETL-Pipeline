@@ -1,4 +1,3 @@
--- Load Bronze Products
 INSERT INTO SS_BRONZE_PRODUCTS (
     product_id,
     product_name,
@@ -22,4 +21,14 @@ SELECT
     CURRENT_TIMESTAMP    AS ingestion_ts,
     METADATA$FILENAME    AS source_file,
     HASH($1,$2,$3,$4,$5,$6,$7) AS row_hash
-FROM @SS_BRONZE_STAGE/products_day1.csv;
+FROM @SS_BRONZE_STAGE/products_day1.csv
+WHERE $7::TIMESTAMP_NTZ >
+      COALESCE(
+          (SELECT last_loaded_ts
+           FROM SS_BRONZE_LOAD_WATERMARKS
+           WHERE table_name = 'SS_BRONZE_PRODUCTS'),
+          '1900-01-01'
+      )
+AND HASH($1,$2,$3,$4,$5,$6,$7) NOT IN (
+    SELECT row_hash FROM SS_BRONZE_PRODUCTS
+);
