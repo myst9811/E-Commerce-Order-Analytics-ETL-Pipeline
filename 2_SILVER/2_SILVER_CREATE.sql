@@ -30,3 +30,24 @@ CREATE TABLE IF NOT EXISTS SS_SILVER_CUSTOMERS (
     created_ts TIMESTAMP_NTZ DEFAULT CURRENT_TIMESTAMP,
     updated_ts TIMESTAMP_NTZ
 );
+
+-- Silver products (SCD Type 2)
+CREATE TABLE IF NOT EXISTS SS_SILVER_PRODUCTS (
+    product_sk NUMBER AUTOINCREMENT,
+    product_id NUMBER,
+
+    product_name VARCHAR(255),
+    category VARCHAR(100),
+    price NUMBER(12,2),
+    cost NUMBER(12,2),
+    supplier_id NUMBER,
+
+    effective_from DATE,
+    effective_to DATE,
+    is_current BOOLEAN,
+
+    row_hash VARCHAR(64),
+
+    created_ts TIMESTAMP_NTZ DEFAULT CURRENT_TIMESTAMP,
+    updated_ts TIMESTAMP_NTZ
+);
