@@ -38,3 +38,19 @@ WHERE $7::TIMESTAMP_NTZ >
 AND HASH($1,$2,$3,$4,$5,$6,$7) NOT IN (
     SELECT row_hash FROM SS_BRONZE_ORDERS
 );
+
+-- Advance the Watermark Table for Orders
+
+MERGE INTO SS_BRONZE_LOAD_WATERMARKS t
+USING (
+    SELECT
+        'SS_BRONZE_PRODUCTS' AS table_name,
+        MAX(last_updated)    AS last_loaded_ts
+    FROM SS_BRONZE_PRODUCTS
+) s
+ON t.table_name = s.table_name
+WHEN MATCHED THEN
+    UPDATE SET last_loaded_ts = s.last_loaded_ts
+WHEN NOT MATCHED THEN
+    INSERT (table_name, last_loaded_ts)
+    VALUES (s.table_name, s.last_loaded_ts);
