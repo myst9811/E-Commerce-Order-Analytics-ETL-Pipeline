@@ -1,15 +1,37 @@
-
-INSERT INTO SS_BRONZE_CUSTOMERS
+-- Incremental load for Bronze Customers
+INSERT INTO SS_BRONZE_CUSTOMERS (
+    customer_id,
+    first_name,
+    last_name,
+    email,
+    city,
+    country,
+    customer_segment,
+    last_updated,
+    ingestion_ts,
+    source_file,
+    row_hash
+)
 SELECT
-    $1::NUMBER,
-    $2::STRING,
-    $3::STRING,
-    $4::STRING,
-    $5::STRING,
-    $6::STRING,
-    $7::STRING,
-    $8::TIMESTAMP,
-    CURRENT_TIMESTAMP,
-    METADATA$FILENAME,
-    HASH($1,$2,$3,$4,$5,$6,$7,$8)
-FROM @SS_BRONZE_STAGE/customers_day1.csv;
+    $1::NUMBER        AS customer_id,
+    $2::STRING        AS first_name,
+    $3::STRING        AS last_name,
+    $4::STRING        AS email,
+    $5::STRING        AS city,
+    $6::STRING        AS country,
+    $7::STRING        AS customer_segment,
+    $8::TIMESTAMP_NTZ AS last_updated,
+    CURRENT_TIMESTAMP AS ingestion_ts,
+    METADATA$FILENAME AS source_file,
+    HASH($1,$2,$3,$4,$5,$6,$7,$8) AS row_hash
+FROM @SS_BRONZE_STAGE/customers_day1.csv
+WHERE $8::TIMESTAMP_NTZ >
+      COALESCE(
+          (SELECT last_loaded_ts
+           FROM SS_BRONZE_LOAD_WATERMARKS
+           WHERE table_name = 'SS_BRONZE_CUSTOMERS'),
+          '1900-01-01'
+      )
+AND HASH($1,$2,$3,$4,$5,$6,$7,$8) NOT IN (
+    SELECT row_hash FROM SS_BRONZE_CUSTOMERS
+);
