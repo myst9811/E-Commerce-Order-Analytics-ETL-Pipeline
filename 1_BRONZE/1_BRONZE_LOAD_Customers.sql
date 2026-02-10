@@ -51,3 +51,17 @@ WHEN MATCHED THEN
 WHEN NOT MATCHED THEN
     INSERT (table_name, last_loaded_ts)
     VALUES (s.table_name, s.last_loaded_ts);
+
+/*
+Read source file
+↓
+Filter rows newer than last watermark
+↓
+Generate row_hash
+↓
+Exclude already-seen hashes
+↓
+Insert new rows
+↓
+Advance watermark
+*/
